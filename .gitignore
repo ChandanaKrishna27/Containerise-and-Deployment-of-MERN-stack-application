@@ -1,0 +1,19 @@
+# dependencies
+node_modules/
+backend/node_modules/
+client/node_modules/
+
+# build output
+dist/
+build/
+
+# Docker
+*.log
+docker-data/
+mongo-data/
+
+# environment
+.env
+
+# misc
+.DS_Store

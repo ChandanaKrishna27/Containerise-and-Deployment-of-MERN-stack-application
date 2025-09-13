@@ -1,0 +1,37 @@
+services:
+  backend:
+    build:
+      context: ./backend
+    container_name: backend
+    restart: unless-stopped
+    ports:
+      - "4000:4000"
+    environment:
+      - PORT=4000
+      - MONGO_URL=${MONGO_URL}
+      - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}
+    # depends_on not needed since no local mongo container
+
+  frontend:
+    build:
+      context: ./client
+    container_name: frontend
+    restart: unless-stopped
+    ports:
+      - "5173:5173"
+    environment:
+      - VITE_API_URL=http://localhost:4000
+    stdin_open: true
+    tty: true
+    depends_on:
+      - backend
+
+  mongo-express:
+    image: mongo-express:1
+    container_name: mongo-express
+    restart: unless-stopped
+    ports:
+      - "8081:8081"
+    environment:
+      # Point mongo-express directly at Atlas (use full URI)
+      - ME_CONFIG_MONGODB_URL=${MONGO_URL}
