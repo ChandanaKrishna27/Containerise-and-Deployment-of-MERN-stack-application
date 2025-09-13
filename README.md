@@ -40,7 +40,7 @@ It supports user authentication, product browsing, cart & order management, and 
 
 ### 🖥️ Run locally (without Docker)
 
-#### 1. Clone repo
+1. Clone repo
 git clone https://github.com/chandanakrishna27/E-Commerce-MERN.git
 cd E-Commerce-MERN
 
@@ -68,6 +68,8 @@ npm run dev
 Frontend runs at http://localhost:5173
 Backend API runs at http://localhost:4000
 
+
+
 🐳 Run with Docker Compose
 Make sure you’re in the project root.
 
@@ -82,10 +84,10 @@ docker-compose up --build
 
 
 Frontend → http://localhost:5173
-
 Backend → http://localhost:4000
-
 Mongo Express → http://localhost:8081
+
+
 
 📂 Project Structure
 bash
@@ -96,6 +98,8 @@ E-Commerce-MERN/
 │── docker-compose.yml
 │── README.md
 └── .env.example
+
+
 
 
 🛡️ Environment Variables
