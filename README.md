@@ -70,7 +70,7 @@ Backend API runs at http://localhost:4000
 
 
 
-🐳 Run with Docker Compose
+### 🖥️🐳 Run with Docker Compose
 Make sure you’re in the project root.
 
 Create a .env file:
