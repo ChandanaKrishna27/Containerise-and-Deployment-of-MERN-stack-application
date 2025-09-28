@@ -43,7 +43,7 @@ fi
 '''
     }
 
-    // Re-enable Sonar later once first green run completes
+    // Re-enable Sonar after first green run if you want
     // withSonarQubeEnv('sonar-local') { ... }
 
     stage('Build & Push Image') {
