@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mern-app
+  namespace: default
+  labels:
+    app: mern-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mern-app
+  template:
+    metadata:
+      labels:
+        app: mern-app
+    spec:
+      containers:
+      - name: mern-app
+        image: chandanakrishna27/mern-app:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 4000
+        env:
+        - name: PORT
+          value: "4000"
+        - name: MONGODB_URI
+          valueFrom:
+            secretKeyRef:
+              name: mern-secrets
+              key: mongodb_uri
+        resources:
+          requests:
+            cpu: "50m"
+            memory: "128Mi"
+          limits:
+            cpu: "300m"
+            memory: "256Mi"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mern-app
+  namespace: default
+spec:
+  type: NodePort
+  selector:
+    app: mern-app
+  ports:
+  - name: http
+    port: 80
+    targetPort: 4000
+    nodePort: 30080
