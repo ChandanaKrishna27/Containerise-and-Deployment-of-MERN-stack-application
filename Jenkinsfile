@@ -1,47 +1,46 @@
-pipeline {
-  agent any
-  environment {
-    DOCKERHUB_REPO = "chandanakrishna27/mern-app"
-    IMAGE_TAG = "${env.GIT_COMMIT[0..6]}"
-    NODE_OPTIONS = "--max-old-space-size=256"
-    // Add SonarQube later once we confirm pipeline runs
-    // SONARQUBE_ENV = "sonar-local"
-    // SONAR_SCANNER = "SonarQube Scanner"
+#!groovy
+node {
+  // --- Config you can tweak ---
+  def DOCKERHUB_REPO = "chandanakrishna27/mern-app"
+
+  stage('Checkout') {
+    checkout scm
   }
-  tools {
-    nodejs "node18"
-  }
-  stages {
-    stage('Checkout') {
-      steps { checkout scm }
-    }
+
+  // Derive a short image tag from the commit
+  def IMAGE_TAG = sh(returnStdout: true, script: 'git rev-parse --short=7 HEAD').trim()
+
+  // Add Node.js 18 to PATH (requires a NodeJS tool named "node18" in Manage Jenkins → Tools)
+  def nodeHome = tool name: 'node18', type: 'jenkins.plugins.nodejs.tools.NodeJSInstallation'
+  withEnv(["PATH+NODE=${nodeHome}/bin", "NODE_OPTIONS=--max-old-space-size=256"]) {
+
     stage('Install & Test') {
-      steps {
-        sh '''
-          set -e
-          SERVER_DIR=$( [ -d server ] && echo server || find . -maxdepth 2 -type d -name server | head -n1 )
-          CLIENT_DIR=$( [ -d client ] && echo client || find . -maxdepth 2 -type d -name client | head -n1 )
+      sh '''set -e
+SERVER_DIR=$( [ -d server ] && echo server || find . -maxdepth 2 -type d -name server | head -n1 )
+CLIENT_DIR=$( [ -d client ] && echo client || find . -maxdepth 2 -type d -name client | head -n1 )
 
-          echo "SERVER_DIR=$SERVER_DIR"
-          echo "CLIENT_DIR=$CLIENT_DIR"
+echo "SERVER_DIR=$SERVER_DIR"
+echo "CLIENT_DIR=$CLIENT_DIR"
 
-          (cd "$SERVER_DIR" && npm ci && npm test --if-present)
+# Server deps + tests
+(cd "$SERVER_DIR" && npm ci && npm test --if-present)
 
-          if [ -n "$CLIENT_DIR" ] && [ -f "$CLIENT_DIR/package.json" ]; then
-            (cd "$CLIENT_DIR" && npm ci && npm run build --if-present)
-          fi
-        '''
-      }
+# Client deps + build (if present)
+if [ -n "$CLIENT_DIR" ] && [ -f "$CLIENT_DIR/package.json" ]; then
+  (cd "$CLIENT_DIR" && npm ci && npm run build --if-present)
+fi
+'''
     }
+
+    // Re-add Sonar later once first green run completes
+    // withSonarQubeEnv('sonar-local') { ... }
+
     stage('Build & Push Image') {
-      steps {
-        script {
-          docker.withRegistry('https://registry.hub.docker.com', 'dockerhub-creds') {
-            def img = docker.build("${DOCKERHUB_REPO}:${IMAGE_TAG}")
-            img.push()
-            sh "docker rmi ${DOCKERHUB_REPO}:${IMAGE_TAG} || true"
-          }
-        }
+      sh "docker --version"
+      docker.withRegistry('https://registry.hub.docker.com', 'dockerhub-creds') {
+        def img = docker.build("${DOCKERHUB_REPO}:${IMAGE_TAG}")
+        img.push()
+        sh "docker rmi ${DOCKERHUB_REPO}:${IMAGE_TAG} || true"
       }
     }
   }
